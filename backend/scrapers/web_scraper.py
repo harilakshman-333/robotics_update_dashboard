@@ -96,8 +96,12 @@ async def scrape_arxiv_robotics() -> List[Dict[str, Any]]:
             if await is_url_in_db(article_url):
                 continue
             dd = dt.find_next_sibling("dd")
-            title = dd.find("div", class_="list-title mathjax").get_text(strip=True).replace("Title:", "").strip()
-            abstract = dd.find("p", class_="mathjax").get_text(strip=True)
+            if not dd:
+                continue
+            title_div = dd.find("div", class_="list-title")
+            title = title_div.get_text(strip=True).replace("Title:", "").strip() if title_div else "Untitled"
+            abstract_p = dd.find("p", class_="mathjax")
+            abstract = abstract_p.get_text(strip=True) if abstract_p else dd.get_text(strip=True)
             body = abstract[:3000]
             items.append({
                 "title": title,

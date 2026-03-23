@@ -26,14 +26,17 @@ export const FeedCard: React.FC<{ item: FeedItem }> = ({ item }) => {
       <div className="flex items-center gap-2">
         {item.category && <span className="px-2 py-0.5 bg-zinc-800 rounded text-xs border border-zinc-700">{item.category}</span>}
         {item.sentiment && <span className={`w-3 h-3 rounded-full inline-block ml-2 ${sentimentColors[item.sentiment] || 'bg-gray-500'}`}></span>}
-        <span className="ml-auto text-xs text-zinc-400">{dayjs(item.created_at).fromNow()}</span>
+        <span className="ml-auto text-xs text-zinc-400">Published: {dayjs(item.created_at).format('MMM D, YYYY h:mm A')}</span>
+      </div>
+      <div className="text-sm text-zinc-300 italic mb-2">
+        "{item.raw_text?.substring(0, 200)}..."
       </div>
       <div>
         <button className="text-blue-400 text-xs underline" onClick={() => setExpanded((e) => !e)}>
           {expanded ? 'Hide AI Summary' : 'Show AI Summary'}
         </button>
         {expanded && (
-          <div className="mt-2 text-sm text-zinc-200 whitespace-pre-line">{item.summary || 'No summary.'}</div>
+          <div className="mt-2 text-sm text-zinc-200 whitespace-pre-line border-l-2 border-blue-500 pl-3">{item.summary || 'No summary.'}</div>
         )}
       </div>
       {item.entities_json && (

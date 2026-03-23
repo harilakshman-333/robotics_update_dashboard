@@ -34,7 +34,7 @@ async def get_feeds(
     query = query.order_by(FeedItem.created_at.desc()).limit(limit).offset(offset)
     result = await db.execute(query)
     items = result.scalars().all()
-    return [FeedItemOut.from_orm(item) for item in items]
+    return [FeedItemOut.model_validate(item) for item in items]
 
 @router.get("/feeds/trending")
 async def get_trending(db: AsyncSession = Depends(get_db)):

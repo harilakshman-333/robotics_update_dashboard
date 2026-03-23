@@ -26,7 +26,7 @@ def run_x_scraper(self):
     logger.info("Starting X scraper task")
     async def _run():
         try:
-            items = await fetch_grok_x_news()
+            items = fetch_grok_x_news()
             count = 0
             async with SessionLocal() as session:
                 for item in items:

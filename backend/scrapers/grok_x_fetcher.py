@@ -1,14 +1,12 @@
-import openai
 import os
 import json
+from openai import OpenAI
 from backend.config import get_settings
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from typing import List, Dict, Any
 from difflib import SequenceMatcher
 
 settings = get_settings()
-openai.api_key = settings.XAI_API_KEY
-openai.base_url = "https://api.x.ai/v1"
 
 MODEL = "grok-3"
 KEYWORDS = [
@@ -17,20 +15,24 @@ KEYWORDS = [
 ]
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=1, min=2, max=10), retry=retry_if_exception_type(Exception))
-async def fetch_grok_x_news(hours: int = 6) -> List[Dict[str, Any]]:
+def fetch_grok_x_news(hours: int = 6) -> List[Dict[str, Any]]:
+    client = OpenAI(
+        api_key=settings.XAI_API_KEY,
+        base_url="https://api.x.ai/v1"
+    )
     prompt = (
         f"Search X for robotics news from the past {hours} hours. "
         f"Track these keywords: {', '.join(KEYWORDS)}. "
         "Return a JSON list of dicts: title, summary, source_handle, topic, sentiment, companies_mentioned."
     )
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=MODEL,
             messages=[{"role": "user", "content": prompt}],
             max_tokens=2048,
             temperature=0.2,
         )
-        text = response.choices[0].message["content"].strip()
+        text = response.choices[0].message.content.strip()
         try:
             items = json.loads(text)
         except Exception:
@@ -49,5 +51,6 @@ async def fetch_grok_x_news(hours: int = 6) -> List[Dict[str, Any]]:
                 deduped.append(item)
                 seen.append(title)
         return deduped
-    except Exception:
-        return []
+    except Exception as e:
+        print(f"fetch_grok_x_news error: {e}")
+        raise e
