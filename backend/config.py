@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     REDIS_URL: str
     CELERY_BROKER_URL: str = ""
+    APIFY_API_TOKEN: str
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

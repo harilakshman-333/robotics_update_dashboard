@@ -12,9 +12,11 @@ celery_app = Celery(
 )
 
 celery_app.conf.beat_schedule = {
-    "run_x_scraper": {
+    # This runs every morning at 8am UTC. Adjust hour for your timezone if needed.
+    "scrape-x-top-tweets-daily": {
         "task": "backend.scheduler.jobs.run_x_scraper",
-        "schedule": crontab(hour="*/2", minute=0),
+        "schedule": crontab(hour=8, minute=0),
+        "options": {"timezone": "UTC"}
     },
     "run_gmail_scraper": {
         "task": "backend.scheduler.jobs.run_gmail_scraper",

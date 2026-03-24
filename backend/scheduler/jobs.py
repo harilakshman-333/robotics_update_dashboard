@@ -1,7 +1,7 @@
 import logging
 import asyncio
 from celery import shared_task, Task
-from backend.scrapers.grok_x_fetcher import fetch_grok_x_news
+from backend.scrapers.apify_x_fetcher import fetch_top_robotics_tweets
 from backend.scrapers.gmail_fetcher import fetch_gmail_news
 from backend.scrapers.web_scraper import fetch_web_news
 from backend.agents.gemini_agent import enrich_item
@@ -26,7 +26,7 @@ def run_x_scraper(self):
     logger.info("Starting X scraper task")
     async def _run():
         try:
-            items = fetch_grok_x_news()
+            items = await fetch_top_robotics_tweets(max_items=50)
             count = 0
             async with SessionLocal() as session:
                 for item in items:
@@ -34,7 +34,7 @@ def run_x_scraper(self):
                         url=item.get("url", ""),
                         title=item.get("title", ""),
                         source="x",
-                        raw_text=item.get("summary", ""),
+                        raw_text=item.get("raw_text", ""),
                         created_at=datetime.utcnow(),
                         enriched=False
                     )
@@ -44,11 +44,10 @@ def run_x_scraper(self):
                         count += 1
                     except IntegrityError:
                         await session.rollback()
-            logger.info(f"X scraper finished, {count} new items saved.")
+            logger.info(f"X scraper: fetched {len(items)} top robotics tweets from yesterday")
         except Exception as e:
             logger.error(f"X scraper failed: {e}")
             raise e
-    
     asyncio.run(_run())
 
 @shared_task(bind=True, base=BaseTask)
